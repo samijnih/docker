@@ -84,10 +84,10 @@ RUN if [ ${COMPOSER_GLOBAL_INSTALL} = true ]; then \
 #####################################
 # Crontab
 #####################################
-USER root
+# USER root
 
-COPY ./crontab /etc/cron.d
-RUN chmod -R 644 /etc/cron.d
+# COPY ./crontab /etc/cron.d
+# RUN chmod -R 644 /etc/cron.d
 
 #####################################
 # User Aliases
@@ -142,6 +142,19 @@ RUN if [ ${INSTALL_WORKSPACE_SSH} = true ]; then \
         && rm -f /tmp/id_rsa* \
         && chmod 644 /root/.ssh/authorized_keys /root/.ssh/id_rsa.pub \
     && chmod 400 /root/.ssh/id_rsa \
+;fi
+
+#####################################
+# PHP REDIS EXTENSION FOR PHP 7.1
+#####################################
+
+ARG INSTALL_PHPREDIS=false
+ENV INSTALL_PHPREDIS ${INSTALL_PHPREDIS}
+RUN if [ ${INSTALL_PHPREDIS} = true ]; then \
+    # Install Php Redis extension
+    printf "\n" | pecl -q install -o -f redis && \
+    echo "extension=redis.so" >> /etc/php/7.1/mods-available/redis.ini && \
+    phpenmod redis \
 ;fi
 
 #####################################

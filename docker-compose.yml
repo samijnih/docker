@@ -68,7 +68,8 @@ services:
       build:
         context: ./nginx
         args:
-          - PHP_UPSTREAM=php-fpm
+          - PHP_UPSTREAM_CONTAINER=${NGINX_PHP_UPSTREAM_CONTAINER}
+          - PHP_UPSTREAM_PORT=${NGINX_PHP_UPSTREAM_PORT}
       volumes_from:
         - applications
       volumes:
@@ -83,25 +84,20 @@ services:
         - frontend
         - backend
 
-### MySQL Container #########################################
+### PostgreSQL Container ####################################
 
-    mysql:
-      user: "1000:50"
-      build:
-        context: ./mysql
-        args:
-          - MYSQL_VERSION=${MYSQL_VERSION}
-      environment:
-        - MYSQL_DATABASE=${MYSQL_DATABASE}
-        - MYSQL_USER=${MYSQL_USER}
-        - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-        - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-        - TZ=${WORKSPACE_TIMEZONE}
+    postgres:
+      build: ./postgres
       volumes:
-        - ${DATA_SAVE_PATH}/mysql:/var/lib/mysql
-        - ${MYSQL_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d
+        - ${DATA_SAVE_PATH}/postgres:/var/lib/postgresql/data
+      expose:
+        - 5432
       ports:
-        - "${MYSQL_PORT}:3306"
+        - "${POSTGRES_PORT}:5432"
+      environment:
+        - POSTGRES_DB=${POSTGRES_DB}
+        - POSTGRES_USER=${POSTGRES_USER}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       networks:
         - backend
 
@@ -112,37 +108,9 @@ services:
       volumes:
         - ${DATA_SAVE_PATH}/redis:/data
       ports:
-        - "6379:6379"
+        - "${REDIS_PORT}:6379"
       networks:
         - backend
-
-### phpMyAdmin Container ####################################
-
-    phpmyadmin:
-      build: ./phpmyadmin
-      environment:
-        - PMA_ARBITRARY=1
-        - MYSQL_USER=${PMA_USER}
-        - MYSQL_PASSWORD=${PMA_PASSWORD}
-        - MYSQL_ROOT_PASSWORD=${PMA_ROOT_PASSWORD}
-      ports:
-        - "${PMA_PORT}:80"
-      depends_on:
-        - "${PMA_DB_ENGINE}"
-      networks:
-        - frontend
-        - backend
-
-### Selenium Container ########################################
-
-    selenium:
-      build: ./selenium
-      ports:
-        - "${SELENIUM_PORT}:4444"
-      volumes:
-        - /dev/shm:/dev/shm
-      networks:
-        - frontend
 
 ### Networks Setup ############################################
 
@@ -155,9 +123,7 @@ networks:
 ### Volumes Setup #############################################
 
 volumes:
-  mysql:
-    driver: "local"
-  redis:
-    driver: "local"
-  phpmyadmin:
-    driver: "local"
+    postgres:
+        driver: "local"
+    redis:
+        driver: "local"
