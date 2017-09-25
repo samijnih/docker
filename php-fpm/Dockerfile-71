@@ -53,13 +53,13 @@ RUN if [ ${INSTALL_XDEBUG} = true ]; then \
 COPY ./xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 
 #####################################
-# PHP REDIS EXTENSION FOR PHP 7
+# PHP REDIS EXTENSION FOR PHP 7.0
 #####################################
 
 ARG INSTALL_PHPREDIS=false
 RUN if [ ${INSTALL_PHPREDIS} = true ]; then \
     # Install Php Redis Extension
-    pecl install -o -f redis \
+    printf "\n" | pecl install -o -f redis \
     &&  rm -rf /tmp/pear \
     &&  docker-php-ext-enable redis \
 ;fi
@@ -112,8 +112,7 @@ RUN if [ ${INSTALL_INTL} = true ]; then \
 #--------------------------------------------------------------------------
 #
 
-ADD ./laravel.ini /usr/local/etc/php/conf.d
-ADD ./laravel.pool.conf /usr/local/etc/php-fpm.d/
+ADD ./silex.ini /usr/local/etc/php/conf.d
 
 #RUN rm -r /var/lib/apt/lists/*
 
